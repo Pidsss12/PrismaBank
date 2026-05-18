@@ -117,6 +117,72 @@
                     </table>
                 </div>
             </div>
+
+            <!-- User Role Management Table -->
+            <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <div>
+                        <h4 class="text-2xl font-black text-slate-900 tracking-tighter">Pengaturan Role Pengguna</h4>
+                        <p class="text-xs text-slate-400 font-medium mt-1">Ubah hak akses pengguna menjadi Admin, Petugas, atau Nasabah secara langsung.</p>
+                    </div>
+                    <span class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100 flex items-center gap-1.5 whitespace-nowrap">
+                        <i data-lucide="shield" class="w-3.5 h-3.5"></i> {{ all_users.count }} Pengguna Terdaftar
+                    </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                <th class="pb-4">Pengguna</th>
+                                <th class="pb-4">Role Saat Ini</th>
+                                <th class="pb-4">Tanggal Bergabung</th>
+                                <th class="pb-4 text-right">Ubah Akses/Role</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm font-medium text-slate-600">
+                            {% for u in all_users %}
+                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
+                                <td class="py-4 flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 text-xs">
+                                        {{ u.username|slice:":2"|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-slate-900 leading-tight">{{ u.username }}</p>
+                                        <p class="text-[10px] text-slate-400 font-medium mt-0.5">{{ u.email|default:"nasabah@prismabank.com" }}</p>
+                                    </div>
+                                </td>
+                                <td class="py-4">
+                                    {% if u.is_superuser %}
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-purple-50 text-purple-600 border border-purple-100">
+                                        🛡️ Super Admin
+                                    </span>
+                                    {% elif u.is_staff %}
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                        💼 Petugas (Staff)
+                                    </span>
+                                    {% else %}
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                        👤 Nasabah (Client)
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 text-xs text-slate-400">{{ u.date_joined|date:"d-m-Y" }}</td>
+                                <td class="py-4 text-right">
+                                    <form action="{% url 'change_user_role' u.id %}" method="POST" class="inline-flex items-center gap-1.5">
+                                        {% csrf_token %}
+                                        <select name="role" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-indigo-600 focus:outline-none transition-all cursor-pointer">
+                                            <option value="customer" {% if not u.is_staff and not u.is_superuser %}selected{% endif %}>Jadikan Nasabah</option>
+                                            <option value="petugas" {% if u.is_staff and not u.is_superuser %}selected{% endif %}>Jadikan Petugas</option>
+                                            <option value="admin" {% if u.is_superuser %}selected{% endif %}>Jadikan Admin</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Management Sidebar -->

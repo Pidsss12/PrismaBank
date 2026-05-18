@@ -572,6 +572,7 @@ def export_queues_csv(request):
 @user_passes_test(lambda u: u.is_superuser)
 def admin_dashboard(request):
     from django.db.models import Count, Avg, F, ExpressionWrapper, fields
+    from django.contrib.auth.models import User
     
     stats = {
         'total_queues': QueueItem.objects.count(),
@@ -594,10 +595,12 @@ def admin_dashboard(request):
         stats['formatted_wait'] = "0m 0s"
         
     recent_activity = QueueItem.objects.all().order_by('-created_at')[:10]
+    all_users = User.objects.all().select_related('profile').order_by('-date_joined')
     
     return render(request, 'queues/admin.html', {
         'stats': stats,
-        'recent_activity': recent_activity
+        'recent_activity': recent_activity,
+        'all_users': all_users
     })
 
 def queue_status(request, item_id):
@@ -653,3 +656,26 @@ def update_profile(request):
         })
         
     return JsonResponse({'status': 'error', 'message': 'Metode tidak diperbolehkan.'}, status=405)
+
+@user_passes_test(lambda u: u.is_superuser)
+def change_user_role(request, user_id):
+    from django.contrib.auth.models import User
+    user_to_change = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        new_role = request.POST.get('role')
+        
+        if new_role == 'admin':
+            user_to_change.is_superuser = True
+            user_to_change.is_staff = True
+        elif new_role == 'petugas':
+            user_to_change.is_superuser = False
+            user_to_change.is_staff = True
+        else: # customer
+            user_to_change.is_superuser = False
+            user_to_change.is_staff = False
+            
+        user_to_change.save()
+        messages.success(request, f"Role user {user_to_change.username} berhasil diubah ke {new_role.upper()}!")
+        
+    return redirect('admin_dashboard')

@@ -15,6 +15,7 @@ urlpatterns = [
     path('monitor/', views.public_monitor, name='public_monitor'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-dashboard/export/', views.export_queues_csv, name='export_queues_csv'),
+    path('admin-dashboard/change-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     
     # API
     path('queue-status/<int:item_id>/', views.queue_status, name='queue_status'),
