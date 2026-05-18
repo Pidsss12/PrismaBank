@@ -83,26 +83,26 @@
             </div>
 
             <!-- Recent Activity Table -->
-            <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl">
-                <h4 class="text-2xl font-black text-slate-900 tracking-tighter mb-8">Aktivitas Terbaru</h4>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+            <div class="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-xl">
+                <h4 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter mb-8">Aktivitas Terbaru</h4>
+                <div class="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+                    <table class="w-full text-left min-w-[550px] table-auto">
                         <thead>
                             <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                                <th class="pb-4">Nomor</th>
-                                <th class="pb-4">Kategori</th>
-                                <th class="pb-4">Petugas</th>
-                                <th class="pb-4">Status</th>
-                                <th class="pb-4">Waktu</th>
+                                <th class="pb-4 whitespace-nowrap">Nomor</th>
+                                <th class="pb-4 whitespace-nowrap">Kategori</th>
+                                <th class="pb-4 whitespace-nowrap">Petugas</th>
+                                <th class="pb-4 whitespace-nowrap">Status</th>
+                                <th class="pb-4 whitespace-nowrap">Waktu</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm font-medium text-slate-600">
                             {% for item in recent_activity %}
                             <tr class="border-b border-slate-50">
-                                <td class="py-4 font-black text-slate-900">{{ item.formatted_number }}</td>
-                                <td class="py-4">{{ item.category.name }}</td>
-                                <td class="py-4">{{ item.petugas.username|default:"-" }}</td>
-                                <td class="py-4">
+                                <td class="py-4 font-black text-slate-900 whitespace-nowrap">{{ item.formatted_number }}</td>
+                                <td class="py-4 whitespace-nowrap">{{ item.category.name }}</td>
+                                <td class="py-4 whitespace-nowrap">{{ item.petugas.username|default:"-" }}</td>
+                                <td class="py-4 whitespace-nowrap">
                                     <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase
                                         {% if item.status == 'completed' %}bg-emerald-50 text-emerald-600
                                         {% elif item.status == 'waiting' %}bg-amber-50 text-amber-600
@@ -110,7 +110,7 @@
                                         {{ item.status }}
                                     </span>
                                 </td>
-                                <td class="py-4 text-xs text-slate-400">{{ item.created_at|date:"H:i" }}</td>
+                                <td class="py-4 text-xs text-slate-400 whitespace-nowrap">{{ item.created_at|date:"H:i" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -119,55 +119,57 @@
             </div>
 
             <!-- User Role Management Table -->
-            <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl mt-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div class="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-xl mt-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
                     <div>
-                        <h4 class="text-2xl font-black text-slate-900 tracking-tighter">Pengaturan Role Pengguna</h4>
+                        <h4 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter">Pengaturan Role Pengguna</h4>
                         <p class="text-xs text-slate-400 font-medium mt-1">Ubah hak akses pengguna menjadi Admin, Petugas, atau Nasabah secara langsung.</p>
                     </div>
-                    <span class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100 flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100 flex items-center gap-1.5 whitespace-nowrap self-start lg:self-auto">
                         <i data-lucide="shield" class="w-3.5 h-3.5"></i> {{ all_users.count }} Pengguna Terdaftar
                     </span>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                <div class="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+                    <table class="w-full text-left min-w-[750px] table-auto">
                         <thead>
                             <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                                <th class="pb-4">Pengguna</th>
-                                <th class="pb-4">Role Saat Ini</th>
-                                <th class="pb-4">Tanggal Bergabung</th>
-                                <th class="pb-4 text-right">Ubah Akses/Role</th>
+                                <th class="pb-4 whitespace-nowrap">Pengguna</th>
+                                <th class="pb-4 whitespace-nowrap">Role Saat Ini</th>
+                                <th class="pb-4 whitespace-nowrap">Tanggal Bergabung</th>
+                                <th class="pb-4 text-right whitespace-nowrap">Ubah Akses/Role</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm font-medium text-slate-600">
                             {% for u in all_users %}
                             <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
-                                <td class="py-4 flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 text-xs">
-                                        {{ u.username|slice:":2"|upper }}
-                                    </div>
-                                    <div>
-                                        <p class="font-black text-slate-900 leading-tight">{{ u.username }}</p>
-                                        <p class="text-[10px] text-slate-400 font-medium mt-0.5">{{ u.email|default:"nasabah@prismabank.com" }}</p>
+                                <td class="py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 text-xs flex-shrink-0">
+                                            {{ u.username|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <p class="font-black text-slate-900 leading-tight">{{ u.username }}</p>
+                                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">{{ u.email|default:"nasabah@prismabank.com" }}</p>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="py-4">
+                                <td class="py-4 whitespace-nowrap">
                                     {% if u.is_superuser %}
-                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-purple-50 text-purple-600 border border-purple-100">
+                                    <span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase bg-purple-50 text-purple-600 border border-purple-100 inline-flex items-center gap-1">
                                         🛡️ Super Admin
                                     </span>
                                     {% elif u.is_staff %}
-                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                    <span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase bg-indigo-50 text-indigo-600 border border-indigo-100 inline-flex items-center gap-1">
                                         💼 Petugas (Staff)
                                     </span>
                                     {% else %}
-                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                    <span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100 inline-flex items-center gap-1">
                                         👤 Nasabah (Client)
                                     </span>
                                     {% endif %}
                                 </td>
-                                <td class="py-4 text-xs text-slate-400">{{ u.date_joined|date:"d-m-Y" }}</td>
-                                <td class="py-4 text-right">
+                                <td class="py-4 whitespace-nowrap text-xs text-slate-400">{{ u.date_joined|date:"d-m-Y" }}</td>
+                                <td class="py-4 whitespace-nowrap text-right">
                                     <form action="{% url 'change_user_role' u.id %}" method="POST" class="inline-flex items-center gap-1.5">
                                         {% csrf_token %}
                                         <select name="role" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-indigo-600 focus:outline-none transition-all cursor-pointer">
