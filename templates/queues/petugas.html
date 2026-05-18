@@ -110,8 +110,11 @@
                voices[0];
     }
 
-    function announce(number, counterName) {
-        if (!number) return;
+    function announce(number, counterName, callback) {
+        if (!number) {
+            if (callback) callback();
+            return;
+        }
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance();
@@ -120,7 +123,52 @@
             msg.lang = 'id-ID';
             msg.voice = getIndonesianVoice();
             msg.rate = 0.9;
+            if (callback) {
+                let called = false;
+                const done = () => {
+                    if (!called) {
+                        called = true;
+                        callback();
+                    }
+                };
+                msg.onend = done;
+                msg.onerror = done;
+                setTimeout(done, 5000); // 5s safe fallback
+            }
             window.speechSynthesis.speak(msg);
+        } else {
+            if (callback) callback();
+        }
+    }
+
+    function announceCompletion(number, callback) {
+        if (!number) {
+            if (callback) callback();
+            return;
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance();
+            const spelled = number.split('').join(' ');
+            msg.text = `Pelayanan untuk nomor antrean ${spelled} telah selesai. Terima kasih.`;
+            msg.lang = 'id-ID';
+            msg.voice = getIndonesianVoice();
+            msg.rate = 0.95;
+            if (callback) {
+                let called = false;
+                const done = () => {
+                    if (!called) {
+                        called = true;
+                        callback();
+                    }
+                };
+                msg.onend = done;
+                msg.onerror = done;
+                setTimeout(done, 5000); // 5s safe fallback
+            }
+            window.speechSynthesis.speak(msg);
+        } else {
+            if (callback) callback();
         }
     }
 
@@ -129,14 +177,24 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    announce(data.number, data.counter);
+                    // Show confirmation Swal popup
                     Swal.fire({
                         title: 'Antrean Dipanggil!',
                         text: `Nomor ${data.number} silakan ke ${data.counter}`,
                         icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => location.reload());
+                        showConfirmButton: true,
+                        confirmButtonText: 'Tutup',
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            title: 'font-black text-slate-900',
+                            htmlContainer: 'font-semibold text-slate-500'
+                        }
+                    });
+
+                    // Trigger Voice Announcement, and reload the page only when it's done!
+                    announce(data.number, data.counter, function() {
+                        location.reload();
+                    });
                 } else {
                     Toast.fire({
                         icon: 'info',
@@ -159,31 +217,25 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success' || !data.error) {
-                    // Voice Announcement
-                    if ('speechSynthesis' in window) {
-                        window.speechSynthesis.cancel();
-                        const msg = new SpeechSynthesisUtterance();
-                        msg.text = `Pelayanan untuk nomor antrean ${num.split('').join(' ')} telah selesai. Terima kasih.`;
-                        msg.lang = 'id-ID';
-                        msg.voice = getIndonesianVoice();
-                        msg.rate = 0.95;
-                        window.speechSynthesis.speak(msg);
-                    }
-                    
-                    // Beautiful Premium Popup
+                    // Show completed Swal popup
                     Swal.fire({
                         title: 'Pelayanan Selesai!',
                         text: `Nomor antrean ${num} telah selesai dilayani. Terima kasih!`,
                         icon: 'success',
-                        timer: 2500,
-                        showConfirmButton: false,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Tutup',
                         background: '#ffffff',
                         customClass: {
                             popup: 'rounded-[2rem]',
                             title: 'font-black text-slate-900',
                             htmlContainer: 'font-semibold text-slate-500'
                         }
-                    }).then(() => location.reload());
+                    });
+
+                    // Voice Announcement and reload only on finish!
+                    announceCompletion(num, function() {
+                        location.reload();
+                    });
                 } else {
                     Toast.fire({
                         icon: 'error',
