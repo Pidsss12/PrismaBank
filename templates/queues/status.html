@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Status - Prisma Bank</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-[#fbfcfe] text-slate-900 min-h-screen flex flex-col p-4 sm:p-8">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-8 sm:mb-16">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xs">P</div>
+            <span class="font-black tracking-tighter text-lg uppercase">Prisma<span class="text-indigo-600">Bank</span></span>
+        </div>
+        <div class="px-4 py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-full border border-indigo-100 tracking-widest">LIVE STATUS</div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center text-center">
+        <div class="w-full max-w-sm bg-white rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-indigo-100/50 p-6 sm:p-12 border border-slate-100 relative overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-50"></div>
+
+            <p class="text-[0.7rem] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Nomor Antrean Anda</p>
+            <h1 class="text-6xl sm:text-8xl font-black text-slate-900 mb-2 tracking-tighter">{{ item.number }}</h1>
+            <p class="text-indigo-600 font-black text-xl mb-6 sm:mb-12 uppercase tracking-widest">{{ item.category.name }}</p>
+
+            <div class="space-y-6">
+                {% if item.status == 'waiting' %}
+                <div class="bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 border border-slate-100">
+                    <p class="text-[0.6rem] font-black text-slate-400 uppercase tracking-widest mb-2">Orang di depan Anda</p>
+                    <p class="text-4xl sm:text-5xl font-black text-indigo-600 tracking-tighter">{{ ahead }}</p>
+                </div>
+                <div class="flex items-center justify-center gap-3 text-slate-400 pt-4">
+                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                    <span class="text-sm font-bold tracking-tight">Menunggu Panggilan...</span>
+                </div>
+                {% elif item.status == 'calling' %}
+                <div class="bg-indigo-600 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-indigo-200 animate-pulse-soft text-white">
+                    <i data-lucide="volume-2" class="w-8 h-8 mx-auto mb-4"></i>
+                    <p class="font-black text-xl uppercase tracking-tighter">SEGERA KE LOKET!</p>
+                    <p class="text-xs text-indigo-100 font-medium opacity-80">Nomor Anda sedang dipanggil.</p>
+                </div>
+                {% else %}
+                <div class="bg-emerald-500 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 text-white shadow-xl shadow-emerald-100">
+                    <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-4"></i>
+                    <p class="font-black text-xl uppercase tracking-tighter">LAYANAN SELESAI</p>
+                    <p class="text-xs text-emerald-100 font-medium opacity-80">Terima kasih telah berkunjung.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-20 text-center space-y-4">
+        <p class="text-[0.6rem] text-slate-300 font-black uppercase tracking-[0.2em] italic">Simpan halaman ini untuk memantau status Anda secara real-time.</p>
+        <div class="flex justify-center gap-6 opacity-30">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+            <i data-lucide="wifi" class="w-4 h-4"></i>
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        // Auto refresh setiap 10 detik
+        setTimeout(() => {
+            location.reload();
+        }, 10000);
+    </script>
+</body>
+</html>
