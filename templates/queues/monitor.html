@@ -323,10 +323,10 @@
                 if (window.lastReceivedData === dataString) return;
                 window.lastReceivedData = dataString;
 
-                if (data.latest_call) {
-                    const heroNum = document.getElementById('hero-number');
-                    const heroCnt = document.getElementById('hero-counter');
+                const heroNum = document.getElementById('hero-number');
+                const heroCnt = document.getElementById('hero-counter');
 
+                if (data.latest_call) {
                     // Trigger Voice on NEW ID or NEW CALL TIME (Recall)
                     if (lastId !== data.latest_call.id || lastCallTime !== data.latest_call.called_at) {
                         heroNum.classList.add('scale-110', 'text-indigo-600');
@@ -346,6 +346,12 @@
                     }
                     heroNum.innerText = data.latest_call.formatted_number;
                     heroCnt.innerText = data.latest_call.counter_name;
+                } else {
+                    heroNum.innerText = '--';
+                    heroCnt.innerText = 'MENUNGGU ANTRIAN';
+                    document.querySelectorAll('#counter-list > div').forEach(el => el.classList.remove('ring-4', 'ring-indigo-500', 'bg-white', 'shadow-2xl'));
+                    lastId = null;
+                    lastCallTime = null;
                 }
 
                 // Handle Completion Voice

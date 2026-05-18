@@ -259,8 +259,11 @@ def public_monitor(request):
 @api_view(['GET'])
 def api_monitor_data(request):
     counters = Counter.objects.all().select_related('service_category')
-    # Get the most recently called item
-    latest_call = QueueItem.objects.filter(called_at__isnull=False).order_by('-called_at').first()
+    # Get the most recently called item that is STILL active (calling or processing)
+    latest_call = QueueItem.objects.filter(
+        called_at__isnull=False,
+        status__in=['calling', 'processing']
+    ).order_by('-called_at').first()
     
     # Get the most recently completed item for the "Selesai" announcement
     last_completed = QueueItem.objects.filter(status='completed').order_by('-finished_at').first()
