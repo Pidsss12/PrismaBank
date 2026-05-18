@@ -123,17 +123,25 @@ def petugas_dashboard(request):
     
     # Handle auto-assignment if no counter is assigned
     if not counter:
-        counter = Counter.objects.filter(current_petugas__isnull=True).first()
+        username_lower = request.user.username.lower()
+        if 'cs' in username_lower:
+            counter = Counter.objects.filter(current_petugas__isnull=True, service_category__name__icontains='cs').first()
+        elif 'teller' in username_lower:
+            counter = Counter.objects.filter(current_petugas__isnull=True, service_category__name__icontains='teller').first()
+            
+        # Fallback to any free counter if no specific matching found
+        if not counter:
+            counter = Counter.objects.filter(current_petugas__isnull=True).first()
+            
         if counter:
             counter.current_petugas = request.user
             counter.is_active = True
             counter.save()
             
-    # Show available counters of the SAME category
-    available_counters = Counter.objects.filter(
-        current_petugas__isnull=True,
-        service_category=counter.service_category if counter else None
-    )
+    # Show all available counters that have no active petugas (allows switching role/counter)
+    available_counters = Counter.objects.filter(current_petugas__isnull=True)
+    if counter:
+        available_counters = available_counters.exclude(id=counter.id)
             
     current_queue = QueueItem.objects.filter(petugas=request.user, status__in=['calling', 'processing']).first()
     
@@ -175,7 +183,15 @@ def call_next(request):
     
     # If not found, try to auto-assign one for this session if available
     if not counter:
-        counter = Counter.objects.filter(current_petugas__isnull=True).first()
+        username_lower = request.user.username.lower()
+        if 'cs' in username_lower:
+            counter = Counter.objects.filter(current_petugas__isnull=True, service_category__name__icontains='cs').first()
+        elif 'teller' in username_lower:
+            counter = Counter.objects.filter(current_petugas__isnull=True, service_category__name__icontains='teller').first()
+            
+        if not counter:
+            counter = Counter.objects.filter(current_petugas__isnull=True).first()
+            
         if counter:
             counter.current_petugas = request.user
             counter.is_active = True
