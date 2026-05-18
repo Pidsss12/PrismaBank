@@ -317,43 +317,46 @@ def export_queues_csv(request):
     # Create Workbook
     wb = Workbook()
     
-    # Style definitions
-    font_brand = Font(name='Segoe UI', size=11, bold=True, color='4F46E5')
-    font_title = Font(name='Segoe UI', size=15, bold=True, color='1E1B4B')
-    font_subtitle = Font(name='Segoe UI', size=9, italic=True, color='64748B')
+    # Style definitions in CFI (Corporate Finance Institute) Premium Theme
+    fill_cfi_navy = PatternFill(start_color='0C2340', end_color='0C2340', fill_type='solid') # CFI Deep Navy
+    fill_accent_gold = PatternFill(start_color='FF9E1B', end_color='FF9E1B', fill_type='solid') # CFI Accent Gold
     
-    font_header = Font(name='Segoe UI', size=11, bold=True, color='FFFFFF')
-    font_data = Font(name='Segoe UI', size=10, color='1E293B')
+    font_brand = Font(name='Segoe UI', size=11, bold=True, color='FFFFFF')
+    font_cfi_header = Font(name='Segoe UI', size=10, bold=True, color='0C2340')
+    font_cfi_title = Font(name='Segoe UI', size=14, bold=True, color='0C2340')
+    font_cfi_subtitle = Font(name='Segoe UI', size=9, italic=True, color='475569')
     
-    fill_header = PatternFill(start_color='1E1B4B', end_color='1E1B4B', fill_type='solid') # Sleek Dark Indigo
-    fill_zebra = PatternFill(start_color='F8FAFC', end_color='F8FAFC', fill_type='solid') # Soft Slate Zebra
+    font_header = Font(name='Segoe UI', size=9, bold=True, color='0C2340')
+    font_data = Font(name='Segoe UI', size=9, color='334155')
+    
+    fill_zebra = PatternFill(start_color='F8FAFC', end_color='F8FAFC', fill_type='solid') # Very subtle slate grey
     fill_white = PatternFill(start_color='FFFFFF', end_color='FFFFFF', fill_type='solid')
     
-    # Status badges
-    fill_completed = PatternFill(start_color='D1FAE5', end_color='D1FAE5', fill_type='solid') # soft green
-    font_completed = Font(name='Segoe UI', size=9, bold=True, color='065F46')
+    # Status badges (matching CFI's elegant pastel highlight tones)
+    fill_completed = PatternFill(start_color='E8F5E9', end_color='E8F5E9', fill_type='solid') # soft green
+    font_completed = Font(name='Segoe UI', size=8, bold=True, color='1B5E20')
 
-    fill_waiting = PatternFill(start_color='FEF3C7', end_color='FEF3C7', fill_type='solid')   # soft amber
-    font_waiting = Font(name='Segoe UI', size=9, bold=True, color='92400E')
+    fill_waiting = PatternFill(start_color='FFF8E1', end_color='FFF8E1', fill_type='solid')   # soft amber
+    font_waiting = Font(name='Segoe UI', size=8, bold=True, color='B78103')
 
-    fill_calling = PatternFill(start_color='E0E7FF', end_color='E0E7FF', fill_type='solid')   # soft indigo
-    font_calling = Font(name='Segoe UI', size=9, bold=True, color='3730A3')
+    fill_calling = PatternFill(start_color='E3F2FD', end_color='E3F2FD', fill_type='solid')   # soft blue
+    font_calling = Font(name='Segoe UI', size=8, bold=True, color='0D47A1')
 
-    fill_missed = PatternFill(start_color='FEE2E2', end_color='FEE2E2', fill_type='solid')     # soft red
-    font_missed = Font(name='Segoe UI', size=9, bold=True, color='991B1B')
+    fill_missed = PatternFill(start_color='FFEBEE', end_color='FFEBEE', fill_type='solid')     # soft red
+    font_missed = Font(name='Segoe UI', size=8, bold=True, color='C62828')
     
-    # Border Definitions (Classic Minimalist Ledger Style - NO vertical columns borders!)
-    border_header_top = Side(border_style='medium', color='1E1B4B')
-    border_header_bottom = Side(border_style='medium', color='1E1B4B')
-    border_data_bottom_side = Side(border_style='thin', color='CBD5E1') # Slate 300 thin horizontal line
-    border_table_bottom_side = Side(border_style='double', color='1E1B4B') # Elegant double line closure
+    # CFI border styles (No vertical lines, medium navy highlights for headers/footers)
+    border_thin_bottom = Side(border_style='thin', color='E2E8F0')
+    border_medium_navy = Side(border_style='medium', color='0C2340')
+    border_double_navy = Side(border_style='double', color='0C2340')
     
-    border_header = Border(top=border_header_top, bottom=border_header_bottom, left=None, right=None)
-    border_data = Border(bottom=border_data_bottom_side, left=None, right=None)
-    border_last_row = Border(bottom=border_table_bottom_side, left=None, right=None)
+    border_header = Border(top=border_thin_bottom, bottom=border_medium_navy, left=None, right=None)
+    border_data = Border(bottom=border_thin_bottom, left=None, right=None)
+    border_last_row = Border(bottom=border_double_navy, left=None, right=None)
     
     center_align = Alignment(horizontal='center', vertical='center')
     left_align = Alignment(horizontal='left', vertical='center')
+    right_align = Alignment(horizontal='right', vertical='center')
 
     # If there are no queues, create a default empty sheet
     if not queues_by_date:
@@ -375,30 +378,99 @@ def export_queues_csv(request):
             else:
                 ws = wb.create_sheet(title=sheet_name)
                 
-            # Write Branded Title Header
-            ws.cell(row=2, column=1, value="PRISMA BANKING SYSTEM").font = font_brand
-            ws.cell(row=3, column=1, value="Laporan Performa Operasional Antrean").font = font_title
-            ws.cell(row=4, column=1, value=f"Tanggal Pelayanan: {sheet_name} | Total Antrean: {len(queues_by_date[date_key])}").font = font_subtitle
+            # Set gridlines visible (standard in CFI except for merged titles)
+            ws.views.sheetView[0].showGridLines = True
             
-            # Row heights for branding space
-            ws.row_dimensions[2].height = 18
-            ws.row_dimensions[3].height = 24
-            ws.row_dimensions[4].height = 16
+            # --- 1. WRITE SOLID NAVY BRAND BANNER ---
+            ws.row_dimensions[2].height = 30
+            ws.merge_cells('A2:G2')
             
-            # Write sequential category-separated tables
+            # Apply navy fill across the merged block
+            for col in range(1, 8):
+                cell = ws.cell(row=2, column=col)
+                cell.fill = fill_cfi_navy
+                
+            # Put title text in A2
+            title_cell = ws.cell(row=2, column=1, value="PRISMA BANKING SYSTEM  —  DAILY PERFORMANCE JOURNAL")
+            title_cell.font = font_brand
+            title_cell.alignment = Alignment(horizontal='left', vertical='center', indent=1)
+            
+            # Subtitle information below the banner
+            ws.row_dimensions[4].height = 20
+            info_cell = ws.cell(row=4, column=1, value=f"Tanggal Operasional: {sheet_name}   |   Kantor Cabang: Utama Jakarta   |   Klasifikasi: Internal Audit")
+            info_cell.font = font_cfi_subtitle
+            
+            # Calculate metrics for the day
+            day_queues = queues_by_date[date_key]
+            total_day = len(day_queues)
+            completed_day = len([q for q in day_queues if q.status == 'completed'])
+            missed_day = len([q for q in day_queues if q.status == 'missed'])
+            
+            # Calculate average wait time for the day
+            wait_durations = []
+            for q in day_queues:
+                if q.called_at and q.created_at:
+                    wait_durations.append((q.called_at - q.created_at).total_seconds())
+            if wait_durations:
+                avg_seconds = sum(wait_durations) / len(wait_durations)
+                avg_wait_str = f"{int(avg_seconds // 60)}m {int(avg_seconds % 60)}s"
+            else:
+                avg_wait_str = "0m 0s"
+                
+            # --- 2. WRITE CFI METRICS SUMMARY SIDE-BLOCK (COLUMNS I TO K) ---
+            # Header Card
+            ws.row_dimensions[6].height = 22
+            ws.merge_cells('I6:K6')
+            for col in range(9, 12):
+                cell = ws.cell(row=6, column=col)
+                cell.fill = fill_cfi_navy
+            card_header = ws.cell(row=6, column=9, value="KEY PERFORMANCE INDICATORS")
+            card_header.font = Font(name='Segoe UI', size=8, bold=True, color='FFFFFF')
+            card_header.alignment = center_align
+            
+            metrics = [
+                ("Total Tiket Antrean", total_day, 'FFF3E0', 'C2410C'),       # Soft Gold
+                ("Tiket Terselesaikan", completed_day, 'E8F5E9', '1B5E20'),   # Soft Green
+                ("Tiket Terlewat (Missed)", missed_day, 'FFEBEE', 'C62828'), # Soft Red
+                ("Rata-rata Waktu Tunggu", avg_wait_str, 'E3F2FD', '0D47A1')  # Soft Blue
+            ]
+            
+            for idx, (label, val, bg_color, text_color) in enumerate(metrics, 7):
+                ws.row_dimensions[idx].height = 20
+                ws.merge_cells(start_row=idx, start_column=9, end_row=idx, end_column=10)
+                
+                # Style label cell
+                lbl_cell = ws.cell(row=idx, column=9, value=label)
+                lbl_cell.font = Font(name='Segoe UI', size=8, bold=True, color='475569')
+                lbl_cell.alignment = left_align
+                lbl_cell.border = Border(bottom=border_thin_bottom)
+                
+                # Apply bottom border to column 10 (which is merged with 9)
+                ws.cell(row=idx, column=10).border = Border(bottom=border_thin_bottom)
+                
+                # Style value cell
+                val_cell = ws.cell(row=idx, column=11, value=val)
+                val_cell.font = Font(name='Segoe UI', size=8, bold=True, color=text_color)
+                val_cell.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type='solid')
+                val_cell.alignment = center_align
+                val_cell.border = Border(bottom=border_thin_bottom)
+            
+            # --- 3. WRITE SEQUENTIAL DATA TABLES (COLUMNS A TO G) ---
             categories = ServiceCategory.objects.all()
             current_row = 6
             
             for cat in categories:
-                # Filter queues for this date and this category
-                cat_queues = [q for q in queues_by_date[date_key] if q.category_id == cat.id]
+                cat_queues = [q for q in day_queues if q.category_id == cat.id]
                 
                 if not cat_queues:
                     continue
                 
-                # Write Category Section Sub-header
-                ws.cell(row=current_row, column=1, value=f"KATEGORI LAYANAN: {cat.name.upper()}").font = Font(name='Segoe UI', size=11, bold=True, color='4F46E5')
+                # Write Category Section Header
+                ws.cell(row=current_row, column=1, value=f"KATEGORI LAYANAN: {cat.name.upper()}").font = Font(name='Segoe UI', size=10, bold=True, color='0C2340')
                 ws.row_dimensions[current_row].height = 24
+                # Subtle bottom line accent for category name
+                for col in range(1, 8):
+                    ws.cell(row=current_row, column=col).border = Border(bottom=Side(style='thin', color='CBD5E1'))
                 current_row += 1
                 
                 # Write headers
@@ -408,9 +480,8 @@ def export_queues_csv(request):
                 for col_num, header in enumerate(headers, 1):
                     cell = ws.cell(row=current_row, column=col_num, value=header)
                     cell.font = font_header
-                    cell.fill = fill_header
-                    cell.alignment = center_align
                     cell.border = border_header
+                    cell.alignment = center_align
                 
                 current_row += 1
                 
@@ -447,6 +518,7 @@ def export_queues_csv(request):
                         cell.border = current_border
                         cell.alignment = center_align if col_num != 2 and col_num != 7 else left_align
                         
+                        # Apply elegant CFI-style Status Badge
                         if col_num == 3:
                             status_str = val.lower()
                             if 'completed' in status_str:
@@ -464,15 +536,26 @@ def export_queues_csv(request):
                                 
                     current_row += 1
                 
-                # Add elegant 2 blank rows between categories
+                # Spacer row before the next category table
                 current_row += 2
             
             # Dynamic auto-column-width adjustment (excluding title rows)
             for col in ws.columns:
                 max_len = 0
                 col_letter = col[0].column_letter
+                
+                # Check if it's the metrics side-panel columns (I, J, K) to set fixed elegant widths
+                if col_letter in ['I', 'J', 'K']:
+                    if col_letter == 'I':
+                        ws.column_dimensions[col_letter].width = 18
+                    elif col_letter == 'J':
+                        ws.column_dimensions[col_letter].width = 10
+                    elif col_letter == 'K':
+                        ws.column_dimensions[col_letter].width = 14
+                    continue
+                    
                 for cell in col:
-                    # Ignore title rows 2, 3, 4 for spacing calculations
+                    # Ignore banner row 2, 3, 4 for width calculations
                     if cell.row in [2, 3, 4]:
                         continue
                     if cell.value:
