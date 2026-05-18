@@ -385,67 +385,87 @@ def export_queues_csv(request):
             ws.row_dimensions[3].height = 24
             ws.row_dimensions[4].height = 16
             
-            # Write headers on Row 6
-            headers = ['Nomor Antrean', 'Kategori Layanan', 'Status Antrean', 'Jam Dibuat', 'Jam Dipanggil', 'Jam Selesai', 'Petugas Loket']
-            ws.row_dimensions[6].height = 28
+            # Write sequential category-separated tables
+            categories = ServiceCategory.objects.all()
+            current_row = 6
             
-            for col_num, header in enumerate(headers, 1):
-                cell = ws.cell(row=6, column=col_num, value=header)
-                cell.font = font_header
-                cell.fill = fill_header
-                cell.alignment = center_align
-                cell.border = border_header
+            for cat in categories:
+                # Filter queues for this date and this category
+                cat_queues = [q for q in queues_by_date[date_key] if q.category_id == cat.id]
                 
-            # Write data rows starting from Row 7
-            start_row = 7
-            num_rows = len(queues_by_date[date_key])
-            last_row_idx = start_row + num_rows - 1
-            
-            for idx, q in enumerate(queues_by_date[date_key]):
-                current_row = start_row + idx
-                ws.row_dimensions[current_row].height = 22 # Spacious row height
+                if not cat_queues:
+                    continue
                 
-                created = timezone.localtime(q.created_at).strftime('%H:%M:%S')
-                called = timezone.localtime(q.called_at).strftime('%H:%M:%S') if q.called_at else '-'
-                finished = timezone.localtime(q.finished_at).strftime('%H:%M:%S') if q.finished_at else '-'
+                # Write Category Section Sub-header
+                ws.cell(row=current_row, column=1, value=f"KATEGORI LAYANAN: {cat.name.upper()}").font = Font(name='Segoe UI', size=11, bold=True, color='4F46E5')
+                ws.row_dimensions[current_row].height = 24
+                current_row += 1
                 
-                row_fill = fill_zebra if idx % 2 == 1 else fill_white
+                # Write headers
+                headers = ['Nomor Antrean', 'Kategori Layanan', 'Status Antrean', 'Jam Dibuat', 'Jam Dipanggil', 'Jam Selesai', 'Petugas Loket']
+                ws.row_dimensions[current_row].height = 26
                 
-                row_values = [
-                    q.formatted_number(),
-                    q.category.name,
-                    q.status.upper(),
-                    created,
-                    called,
-                    finished,
-                    q.petugas.username if q.petugas else '-'
-                ]
+                for col_num, header in enumerate(headers, 1):
+                    cell = ws.cell(row=current_row, column=col_num, value=header)
+                    cell.font = font_header
+                    cell.fill = fill_header
+                    cell.alignment = center_align
+                    cell.border = border_header
                 
-                # Choose border for current row
-                current_border = border_last_row if current_row == last_row_idx else border_data
+                current_row += 1
                 
-                for col_num, val in enumerate(row_values, 1):
-                    cell = ws.cell(row=current_row, column=col_num, value=val)
-                    cell.font = font_data
-                    cell.fill = row_fill
-                    cell.border = current_border
-                    cell.alignment = center_align if col_num != 2 and col_num != 7 else left_align
+                # Write data rows
+                start_data_row = current_row
+                num_rows = len(cat_queues)
+                last_row_idx = start_data_row + num_rows - 1
+                
+                for idx, q in enumerate(cat_queues):
+                    ws.row_dimensions[current_row].height = 20
                     
-                    # Apply elegant badge styling to the Status column
-                    if col_num == 3:
-                        status_str = val.lower()
-                        if 'completed' in status_str:
-                            cell.fill = fill_completed
-                            cell.font = font_completed
-                        elif 'waiting' in status_str:
-                            cell.fill = fill_waiting
-                            cell.font = font_waiting
-                        elif 'calling' in status_str or 'progress' in status_str:
-                            cell.fill = fill_calling
-                            cell.font = font_calling
-                        elif 'missed' in status_str:
-                            cell.fill = fill_missed
-                            cell.font = font_missed
+                    created = timezone.localtime(q.created_at).strftime('%H:%M:%S')
+                    called = timezone.localtime(q.called_at).strftime('%H:%M:%S') if q.called_at else '-'
+                    finished = timezone.localtime(q.finished_at).strftime('%H:%M:%S') if q.finished_at else '-'
+                    
+                    row_fill = fill_zebra if idx % 2 == 1 else fill_white
+                    
+                    row_values = [
+                        q.formatted_number(),
+                        q.category.name,
+                        q.status.upper(),
+                        created,
+                        called,
+                        finished,
+                        q.petugas.username if q.petugas else '-'
+                    ]
+                    
+                    current_border = border_last_row if current_row == last_row_idx else border_data
+                    
+                    for col_num, val in enumerate(row_values, 1):
+                        cell = ws.cell(row=current_row, column=col_num, value=val)
+                        cell.font = font_data
+                        cell.fill = row_fill
+                        cell.border = current_border
+                        cell.alignment = center_align if col_num != 2 and col_num != 7 else left_align
+                        
+                        if col_num == 3:
+                            status_str = val.lower()
+                            if 'completed' in status_str:
+                                cell.fill = fill_completed
+                                cell.font = font_completed
+                            elif 'waiting' in status_str:
+                                cell.fill = fill_waiting
+                                cell.font = font_waiting
+                            elif 'calling' in status_str or 'progress' in status_str:
+                                cell.fill = fill_calling
+                                cell.font = font_calling
+                            elif 'missed' in status_str:
+                                cell.fill = fill_missed
+                                cell.font = font_missed
+                                
+                    current_row += 1
+                
+                # Add elegant 2 blank rows between categories
+                current_row += 2
             
             # Dynamic auto-column-width adjustment (excluding title rows)
             for col in ws.columns:
